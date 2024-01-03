@@ -1,0 +1,17 @@
+.loginDiv {
+  background-image: url("/images/discordBackgroundPhoto.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+.formContainer {
+  background-color: #313338;
+  width: 350px;
+  height: 400px;
+  border-radius: 13px;
+  display: grid;
+  place-items: center;
+}

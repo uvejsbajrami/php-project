@@ -1,0 +1,24 @@
+.DiscordContainer {
+  height: 100vh;
+  width: 100%;
+  background-color: #1e1f22;
+}
+.profileicon:hover {
+  opacity: 0.6;
+  cursor: pointer;
+}
+.addServer:hover {
+  opacity: 0.6;
+  cursor: pointer;
+}
+
+.ServerDiv {
+  overflow-y: scroll;
+}
+::-webkit-scrollbar {
+  width: 0;
+}
+
+.FriendsDiv {
+  overflow-y: scroll;
+}
