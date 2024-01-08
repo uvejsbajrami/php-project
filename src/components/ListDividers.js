@@ -6,6 +6,7 @@ import Divider from "@mui/material/Divider";
 import PeopleIcon from "@mui/icons-material/People";
 import WhatshotIcon from "@mui/icons-material/Whatshot";
 import StorefrontIcon from "@mui/icons-material/Storefront";
+import { Link } from "react-router-dom";
 
 const style = {
   width: "100%",
@@ -30,7 +31,12 @@ export default function ListDividers() {
       <Divider />
       <ListItem button divider>
         <WhatshotIcon className="me-2" />
-        <ListItemText primary="servers" />
+        <Link
+          style={{ color: "white", textDecoration: "none" }}
+          to={"/joinserver"}
+        >
+          <ListItemText primary="servers" />
+        </Link>
       </ListItem>
       <ListItem button>
         <StorefrontIcon className="me-2" />

@@ -1,0 +1,16 @@
+.JoinServerContent {
+  height: 100vh;
+  width: 100%;
+  background-color: #2b2d31;
+}
+
+.cardContainer {
+  width: 320px;
+  overflow: auto;
+}
+
+.flexContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}

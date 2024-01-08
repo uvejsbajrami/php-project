@@ -114,6 +114,43 @@ if($action == 'get_user_servers' && is_set($_GET['id']) && $method == 'GET') {
     echo json_encode(['servers' => $servers]);
 }
 
+// Action: get_all_servers
+// HTTP verb: GET
+// URL: http://localhost/php-full-project/php-project/api/api.php?action=get_all_servers
+if($action == 'get_all_servers' && $method == 'GET') {
+    $all_servers = [];
+   
+    // fetch user data
+    $all_servers_stm = $pdo->prepare("SELECT * FROM `server_create`");
+    $all_servers_stm->execute();
+    
+
+    while($row = $all_servers_stm->fetch(PDO::FETCH_ASSOC)){
+        $all_servers[] = $row;
+    }
+
+    echo json_encode(['all_servers' => $all_servers]);
+}
+
+// Action: get_all_users
+// HTTP verb: GET
+// URL: http://localhost/php-full-project/php-project/api/api.php?action=get_all_users
+if($action == 'get_all_users' && $method == 'GET') {
+    $all_users = [];
+
+    // fetch user data
+    $all_users_stm = $pdo->prepare("SELECT * FROM `users`");
+    $all_users_stm->execute();
+    
+
+    while($row = $all_users_stm->fetch(PDO::FETCH_ASSOC)){
+        $all_users[] = $row;
+    }
+
+    echo json_encode(['all_users' => $all_users]);
+}
+
+
 
 // Action: add_friends (toggle)
 // HTTP verb: GET
@@ -222,6 +259,24 @@ if($action == 'get_user_in_server' && is_set($_GET['id']) && $method == 'GET') {
     $user_stm->execute();
     
 
+    while($row = $user_stm->fetch(PDO::FETCH_ASSOC)){
+        $users[] = $row;
+    }
+
+    echo json_encode(['users' => $users]);
+}
+
+
+// Action: get_all_user_in_server
+// HTTP verb: GET
+// URL: http://localhost/php-full-project/php-project/api/api.php?action=get_all_user_in_server
+if($action == 'get_all_user_in_server' && $method == 'GET') {
+    $users = [];
+   
+    // fetch user data
+    $user_stm = $pdo->prepare("SELECT `users_server`.`users_id` FROM `users_server` INNER JOIN `users` ON `users`.`id` = `users_server`.`users_id`
+    ");
+    $user_stm->execute();
     while($row = $user_stm->fetch(PDO::FETCH_ASSOC)){
         $users[] = $row;
     }
@@ -361,11 +416,199 @@ if($action == 'leave_owner_server' && is_set($_GET['server_id']) && is_set($_GET
         echo json_encode(['leave' => "Owneri u fshi nga serveri "]);
     }  
 }
+
+
+// Action: Get_server_messages
+// HTTP verb: GET
+// URL: http://localhost/php-full-project/php-project/api/api.php?action=get_server_messages&server_id=X&channel_id=X
+if($action == 'get_server_messages' && is_set($_GET['server_id']) && is_set($_GET['channel_id']) && $method == 'GET') {
+    $server_messages = [];
+
+   
+    $server_messages_stm = $pdo->prepare("SELECT HOUR(`when`) AS hour_part, MINUTE(`when`) AS minute_part , `sender_id`,`server_id`, `channel_id`,`message`,`id` FROM `server_messages` WHERE `server_id` = :server_id AND `channel_id` = :channel_id ORDER BY `when` ASC");
+    $server_messages_stm->bindParam(':server_id', $_GET['server_id']);
+    $server_messages_stm->bindParam(':channel_id', $_GET['channel_id']);
+    $server_messages_stm->execute();
+   while($row = $server_messages_stm->fetch(PDO::FETCH_ASSOC)){
+    $server_messages[]= $row;
+   }
+ 
+    echo json_encode(['server_messages' => $server_messages ]);
+}
+
+
+
+// Action: send_server_message
+// HTTP verb: POST
+// URL: http://localhost/php-full-project/php-project/api/api.php
+if(is_set($payload) && ($payload['action'] == 'send_server_message') && $method == 'POST') {
+
+    $send_server_message_stm = $pdo->prepare("INSERT INTO `server_messages` (`sender_id`, `server_id`, `channel_id`, `message`) VALUES (:sender_id,  :server_id, :channel_id, :message)");
+    $send_server_message_stm->bindParam(':sender_id', $payload['sender_id']);
+    $send_server_message_stm->bindParam(':server_id', $payload['server_id']);
+    $send_server_message_stm->bindParam(':channel_id', $payload['channel_id']);
+    $send_server_message_stm->bindParam(':message', $payload['message']);
+    if($send_server_message_stm->execute()){
+        $response = ['status' => 1, 'message' => 'Messazhi u dergua me sukses.'];
+    }else {
+        $response = ['status' => 0, 'message' => 'Messazhi nuk u dergua.'];
+    }
+  echo json_encode($response);  
+}
     
 
 
 
+// Action: delete_channel
+// HTTP verb: GET
+// URL: http://localhost/php-full-project/php-project/api/api.php?action=delete_channel&channel_id=X&server_id=X
+if($action == 'delete_channel' && is_set($_GET['channel_id']) && is_set($_GET['server_id']) && $method == 'GET') {
+    $channel_id = $_GET['channel_id'];
+    $server_id = $_GET['server_id'];
 
+    $leave_server_stm = $pdo->prepare("DELETE FROM `channels` WHERE `channels`.`id` = :channel_id AND `channels`.`server_id` = :server_id");
+    $leave_server_stm->bindParam(':channel_id',$channel_id);
+    $leave_server_stm->bindParam(':server_id',$server_id);
+
+    if($leave_server_stm->execute()){
+        echo json_encode(['delete' => "Channeli u fshi nga serveri "]);
+    }
+   
+}
+
+
+// Action: delete_server_message
+// HTTP verb: GET
+// URL: http://localhost/php-full-project/php-project/api/api.php?action=delete_server_message&id=X
+if($action == 'delete_server_message' && is_set($_GET['id']) && $method == 'GET') {
+   
+
+    $delete_server_message_stm = $pdo->prepare("DELETE FROM `server_messages` WHERE `server_messages`.`id` = :id");
+    $delete_server_message_stm->bindParam(':id',$_GET['id']);
+
+    if($delete_server_message_stm->execute()){
+        echo json_encode(['delete' => "Messazhi u fshi me sukses"]);
+    }
+   
+}
+
+
+// Action: get_user_messages
+// HTTP verb: GET
+// URL: http://localhost/php-full-project/php-project/api/api.php?action=get_user_messages&sender_id=X&receiver_id=X
+if ($action == 'get_user_messages' && isset($_GET['sender_id']) && isset($_GET['receiver_id']) && $method == 'GET') {
+    $user_messages = [];
+
+    $user_messages_stm = $pdo->prepare("
+        SELECT HOUR(`when`) AS hour_part, MINUTE(`when`) AS minute_part, `id`, `sender_id`, `receiver_id`, `messages`
+        FROM `messages`
+        WHERE (`messages`.`sender_id` = :sender_id AND `messages`.`receiver_id` = :receiver_id)
+           OR (`messages`.`sender_id` = :receiver_id AND `messages`.`receiver_id` = :sender_id)
+        ORDER BY `when` ASC
+    ");
+
+    $user_messages_stm->bindParam(':sender_id', $_GET['sender_id']);
+    $user_messages_stm->bindParam(':receiver_id', $_GET['receiver_id']);
+    $user_messages_stm->execute();
+
+    while ($row = $user_messages_stm->fetch(PDO::FETCH_ASSOC)) {
+        $user_messages[] = $row;
+    }
+
+    echo json_encode(['user_messages' => $user_messages]);
+}
+
+
+// Action: send_user_message
+// HTTP verb: POST
+// URL: http://localhost/php-full-project/php-project/api/api.php
+if(is_set($payload) && ($payload['action'] == 'send_user_message') && $method == 'POST') {
+
+    $send_user_message_stm = $pdo->prepare("INSERT INTO `messages` (`sender_id`, `receiver_id`, `messages`) VALUES (:sender_id,  :receiver_id, :messages)");
+    $send_user_message_stm->bindParam(':sender_id', $payload['sender_id']);
+    $send_user_message_stm->bindParam(':receiver_id', $payload['receiver_id']);
+    $send_user_message_stm->bindParam(':messages', $payload['messages']);
+    if($send_user_message_stm->execute()){
+        $response = ['status' => 1, 'message' => 'Messazhi u dergua me sukses.'];
+    }else {
+        $response = ['status' => 0, 'message' => 'Messazhi nuk u dergua.'];
+    }
+  echo json_encode($response);  
+}
+
+
+// Action: delete_user_message
+// HTTP verb: GET
+// URL: http://localhost/php-full-project/php-project/api/api.php?action=delete_user_message&id=X
+if($action == 'delete_user_message' && is_set($_GET['id']) && $method == 'GET') {
+   
+
+    $delete_user_message_stm = $pdo->prepare("DELETE FROM `messages` WHERE `messages`.`id` = :id");
+    $delete_user_message_stm->bindParam(':id',$_GET['id']);
+
+    if($delete_user_message_stm->execute()){
+        echo json_encode(['delete' => "Messazhi u fshi me sukses"]);
+    }
+   
+}
+
+
+// Action: join_server
+// HTTP verb: POST
+// URL: http://localhost/php-full-project/php-project/api/api.php
+if(is_set($payload) && ($payload['action'] == 'join_server') && $method == 'POST') {
+
+    $join_server_stm = $pdo->prepare("INSERT INTO `users_server`( `users_id`, `server_id`) VALUES (:users_id, :server_id)");
+    $join_server_stm->bindParam(':users_id', $payload['users_id']);
+    $join_server_stm->bindParam(':server_id', $payload['server_id']);
+    if($join_server_stm->execute()){
+        $response = ['status' => 1, 'message' => 'Keni hyre ne server me sukses.'];
+    }else {
+        $response = ['status' => 0, 'message' => 'Nuk keni hy ne server.'];
+    }
+  echo json_encode($response);  
+}
+
+
+// Action: get_user_in_server_with_id
+// HTTP verb: GET
+// URL: http://localhost/php-full-project/php-project/api/api.php?action=get_user_in_server_with_id&id=X
+if($action == 'get_user_in_server_with_id' && is_set($_GET['id']) && $method == 'GET') {
+   $users_in_server = [];
+
+    $get_user_in_server_with_id_stm = $pdo->prepare("SELECT * FROM `users_server` WHERE `users_server`.`users_id` = :id");
+    $get_user_in_server_with_id_stm->bindParam(':id',$_GET['id']);
+    $get_user_in_server_with_id_stm->execute();
+    while ($row = $get_user_in_server_with_id_stm->fetch(PDO::FETCH_ASSOC)) {
+        $users_in_server[] = $row;
+    }
+
+    echo json_encode(['users_in_server' => $users_in_server]);
+   
+}
+
+// Action: messages_react
+// HTTP verb: POST
+// URL: http://localhost/php-full-project/php-project/api/api.php
+if(is_set($payload) && ($payload['action'] == 'messages_react') && $method == 'POST') {
+
+    $messages_react_stm = $pdo->prepare("INSERT INTO `messages_react`( `messages_id`, `user_id`, `emoji`) VALUES (:messages_id, :user_id,:emoji)");
+    $messages_react_stm->bindParam(':messages_id', $payload['messages_id']);
+    $messages_react_stm->bindParam(':user_id', $payload['user_id']);
+    $messages_react_stm->bindParam(':emoji', $payload['emoji']);
+try {
+   
+    if ($messages_react_stm->execute()) {
+        $response = ['status' => 1, 'message' => 'Emoji u dergua ne databaze.'];
+    } else {
+        $response = ['status' => 0, 'message' => 'Emoji nuk u dergua ne databaze.'];
+    }
+} catch (PDOException $e) {
+ 
+    $response = ['status' => 0, 'message' => 'Error: ' . $e->getMessage()];
+}
+echo json_encode($response);
+}
 
 
 

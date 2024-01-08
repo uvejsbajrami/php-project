@@ -1,5 +1,5 @@
 import axios from "axios";
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import "../styles/ServerChat.css";
 import Button from "@mui/material/Button";
@@ -27,6 +27,8 @@ import AccordionDetails from "@mui/material/AccordionDetails";
 import ExpandMoreIcon from "@mui/icons-material/ExpandMore";
 import IconButton from "@mui/material/IconButton";
 import DeleteIcon from "@mui/icons-material/Delete";
+import ChatDesign from "../components/ChatDesign";
+import VerifiedUserOutlinedIcon from "@mui/icons-material/VerifiedUserOutlined";
 
 const Search = styled("div")(({ theme }) => ({
   position: "relative",
@@ -148,11 +150,11 @@ function ServerChat() {
   const { id } = useParams();
   // const { channelId } = useParams();
   const [server, setServer] = useState(); // marrja e nje serveri
-  const [userInServer, setUserInServer] = useState(); // userat qe jan ne at server
+  const [userInServer, setUserInServer] = useState([]); // userat qe jan ne at server
   const [user, setUser] = useLocalStorage("user"); //useri i logum
   const [createServer, setCreateServer] = useState({}); // serverat e krijum
   const [userServer, setUserServer] = useState([]); // userat qe jan ne servera
-  const [serverOwner, setServerOwner] = useState(); // kirjusi i serverit
+  const [serverOwner, setServerOwner] = useState([]); // kirjusi i serverit
   const [ownerID, setOwnerID] = useState(); // marrja e ids se Krijusit te serverit
 
   const handleCreateServer = (e) => {
@@ -174,7 +176,7 @@ function ServerChat() {
           createServer
         )
         .then((response) => {
-          console.log(response.data);
+          console.log(response?.data);
         })
         .catch((error) => alert(error));
     }
@@ -203,14 +205,14 @@ function ServerChat() {
         .get(
           `http://localhost/php-full-project/php-project/api/api.php?action=leave_server&id=${user.id}&server_id=${id}`
         )
-        .then((res) => console.log(res.data));
+        .then((res) => console.log(res?.data));
       navigate("/discord");
     } else {
       axios
         .get(
           `http://localhost/php-full-project/php-project/api/api.php?action=leave_owner_server&server_id=${id}&user_id=${user.id}`
         )
-        .then((res) => console.log(res.data));
+        .then((res) => console.log(res?.data));
       navigate("/discord");
     }
   }; // Dalja nga serveri
@@ -220,24 +222,24 @@ function ServerChat() {
       .get(
         `http://localhost/php-full-project/php-project/api/api.php?action=get_server&id=${id}`
       )
-      .then((res) => setServer(res.data.server));
+      .then((res) => setServer(res?.data?.server));
     axios
       .get(
         `http://localhost/php-full-project/php-project/api/api.php?action=get_user_in_server&id=${id}`
       )
-      .then((res) => setUserInServer(res.data.users));
+      .then((res) => setUserInServer(res?.data?.users));
     axios
       .get(
         `http://localhost/php-full-project/php-project/api/api.php?action=get_servers_owner&server_id=${id}`
       )
       .then((res) => {
         // Assuming response data is an array of users
-        if (Array.isArray(res.data.users) && res.data.users.length > 0) {
+        if (Array.isArray(res?.data?.users) && res.data?.users?.length > 0) {
           // Set the serverOwner state to the array of users
-          setServerOwner(res.data.users);
+          setServerOwner(res?.data?.users);
 
           // Accessing user_id from the first user object in the array
-          const firstUser = res.data.users[0];
+          const firstUser = res?.data?.users[0];
           const firstUserId = firstUser.user_id;
           setOwnerID(firstUserId);
           console.log("First User ID:", firstUserId);
@@ -253,14 +255,14 @@ function ServerChat() {
       .get(
         `http://localhost/php-full-project/php-project/api/api.php?action=get_user_servers&id=${user.id}`
       )
-      .then((res) => setUserServer(res.data.servers));
+      .then((res) => setUserServer(res?.data?.servers));
   }, [createServer]);
   if (user == null) {
     navigate("/");
   }
 
   const [serversIdImIn, setServersIdImIn] = useState([]); // ID e serverit qe jam ne te
-  const [serversImInDetails, setServersImInDetails] = useState(); // details te serverave qe jam aty
+  const [serversImInDetails, setServersImInDetails] = useState([]); // details te serverave qe jam aty
 
   useEffect(() => {
     axios
@@ -268,11 +270,13 @@ function ServerChat() {
         `http://localhost/php-full-project/php-project/api/api.php?action=get_servers_id_im_in&id=${user.id}`
       )
       .then((res) => {
-        const serverIds = res.data.servers.map((server) => server.server_id);
+        const serverIds = res?.data?.servers?.map(
+          (server) => server?.server_id
+        );
         setServersIdImIn(serverIds);
 
         // Fetch details for each server
-        const fetchServersDetails = serverIds.map((serverId) =>
+        const fetchServersDetails = serverIds?.map((serverId) =>
           axios.get(
             `http://localhost/php-full-project/php-project/api/api.php?action=get_servers_im_in&id=${serverId}`
           )
@@ -280,8 +284,8 @@ function ServerChat() {
 
         Promise.all(fetchServersDetails)
           .then((serverDetailsResponses) => {
-            const serversDetails = serverDetailsResponses.map(
-              (response) => response.data.servers
+            const serversDetails = serverDetailsResponses?.map(
+              (response) => response?.data?.servers
             );
             setServersImInDetails(serversDetails);
           })
@@ -305,14 +309,14 @@ function ServerChat() {
     setAnchor(null);
   };
 
-  const [serverChannel, setServerChannel] = useState();
+  const [serverChannel, setServerChannel] = useState([]);
 
   useEffect(() => {
     axios
       .get(
         `http://localhost/php-full-project/php-project/api/api.php?action=get_server_channels&id=${id}`
       )
-      .then((res) => setServerChannel(res.data.channels));
+      .then((res) => setServerChannel(res?.data?.channels));
   }, [serverChannel]); // marrja e channelave te serverit
 
   const [openss, setOpenss] = React.useState(false);
@@ -337,12 +341,64 @@ function ServerChat() {
         newChannel
       )
       .then((res) => {
-        if (res.data.status === 1) {
+        if (res?.data?.status === 1) {
           window.location.reload(true);
         }
       })
       .catch((error) => console.error("Error creating channel:", error));
   }; //krijimi i channelit
+
+  const [takeChannelId, setTakeChannelId] = useState(); // marrja e channelID
+
+  const [serverMessages, setServerMessages] = useState([]);
+  const [newMessageTrigger, setNewMessageTrigger] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleSendServerMessage = async (e) => {
+    e.preventDefault();
+    const elements = e.target.elements;
+    const newServerMessage = {
+      action: "send_server_message",
+      sender_id: user.id,
+      server_id: id,
+      channel_id: takeChannelId,
+      message: elements["message"].value,
+    };
+    setMessage("");
+    try {
+      await axios.post(
+        "http://localhost/php-full-project/php-project/api/api.php",
+        newServerMessage
+      );
+      setNewMessageTrigger((prev) => !prev);
+    } catch (error) {
+      console.error("Error creating channel:", error);
+    }
+  };
+  useEffect(() => {
+    if (takeChannelId !== undefined && id !== undefined) {
+      axios
+        .get(
+          `http://localhost/php-full-project/php-project/api/api.php?action=get_server_messages&server_id=${id}&channel_id=${takeChannelId}`
+        )
+        .then((res) => {
+          setServerMessages(res?.data?.server_messages);
+        })
+        .catch((error) => {
+          console.error("Error fetching server messages:", error);
+        });
+    }
+  }, [takeChannelId, id, newMessageTrigger]);
+
+  const handleDeleteChannel = (e, channelId) => {
+    e.preventDefault();
+    axios
+      .get(
+        `http://localhost/php-full-project/php-project/api/api.php?action=delete_channel&channel_id=${channelId}&server_id=${id}`
+      )
+      .then((res) => console.log(res?.data));
+    window.location.reload(true);
+  };
   return (
     <div className="serverChat d-flex ">
       <div
@@ -388,7 +444,7 @@ function ServerChat() {
           <hr style={{ color: "white", width: "63%" }} />
           <div className="servers">
             {userServer?.length > 0 &&
-              userServer.map((uServer) => (
+              userServer?.map((uServer) => (
                 <Link
                   style={{ textDecoration: "none" }}
                   to={`/server/${uServer.id}`}
@@ -419,9 +475,9 @@ function ServerChat() {
                 </Link>
               ))}
             {serversImInDetails?.length > 0 &&
-              serversImInDetails.map((serverImInDetail, index) => (
+              serversImInDetails?.map((serverImInDetail, index) => (
                 <div key={index}>
-                  {serverImInDetail.map((server, serverIndex) => (
+                  {serverImInDetail?.map((server, serverIndex) => (
                     <div key={serverIndex}>
                       <Link
                         style={{ textDecoration: "none" }}
@@ -645,23 +701,28 @@ function ServerChat() {
             </AccordionSummary>
             <AccordionDetails>
               {serverChannel?.length > 0 ? (
-                serverChannel.map((serverChannels, index) => (
+                serverChannel?.map((serverChannels, index) => (
                   <Typography key={index}>
                     <div className="d-flex justify-content-between">
-                      <Link
-                        style={{ color: "white", textDecoration: "none" }}
-                        to={`/server/${id}/channel/${serverChannels.id}`}
+                      {" "}
+                      <p
+                        style={{ cursor: "pointer" }}
+                        onClick={() => setTakeChannelId(serverChannels.id)}
                       >
-                        {" "}
-                        <p>{serverChannels?.name} </p>
-                      </Link>
+                        {serverChannels?.name}{" "}
+                      </p>
                       {user?.id == ownerID ? (
                         <Tooltip
                           title="Delete channel"
                           className="d-flex justify-content-center"
                         >
                           <IconButton>
-                            <DeleteIcon style={{ color: "#EE3939" }} />
+                            <DeleteIcon
+                              style={{ color: "#EE3939" }}
+                              onClick={(e) =>
+                                handleDeleteChannel(e, serverChannels.id)
+                              }
+                            />
                           </IconButton>
                         </Tooltip>
                       ) : (
@@ -678,8 +739,42 @@ function ServerChat() {
         </div>
       </div>
 
-      <div style={{ backgroundColor: "#313338" }} className="chat col-7">
-        serverChat
+      <div
+        style={{ backgroundColor: "#313338" }}
+        className=" d-flex flex-column justify-content-between col-7"
+      >
+        <div className="chat">
+          {serverMessages?.length > 0 &&
+            serverMessages?.map((serverMessage) => (
+              <ChatDesign
+                serverDataChat={serverMessage}
+                ownerId={ownerID}
+                usersInServer={userInServer}
+              />
+            ))}
+        </div>
+        <div className="mb-2 inputForm" id="inputForm">
+          <form method="POST" onSubmit={handleSendServerMessage}>
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Type your message..."
+                style={{ backgroundColor: "#424548", color: "white" }}
+                name="message"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ backgroundColor: "#7289da", borderColor: "#7289da" }}
+              >
+                Send
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
 
       <div style={{ backgroundColor: "#2B2D31" }} className="usersServer col-2">
@@ -696,14 +791,16 @@ function ServerChat() {
           </AccordionSummary>
           <AccordionDetails>
             {serverOwner?.length > 0 &&
-              serverOwner.map((owner, index) => (
+              serverOwner?.map((owner, index) => (
                 <Link
-                  to={`/user/${owner.user_id}`}
                   style={{ textDecoration: "none", color: "white" }}
                   key={index}
                 >
                   <Typography>
-                    <h5 className="">{owner?.discordUsername}</h5>
+                    <h5 className="">
+                      {owner?.discordUsername}{" "}
+                      <VerifiedUserOutlinedIcon fontSize="small" />
+                    </h5>
                   </Typography>
                 </Link>
               ))}
@@ -722,7 +819,7 @@ function ServerChat() {
           </AccordionSummary>
           <AccordionDetails>
             {userInServer?.length > 0 &&
-              userInServer.map((uServer, index) => (
+              userInServer?.map((uServer, index) => (
                 <Link
                   to={`/user/${uServer.users_id}`}
                   style={{ textDecoration: "none", color: "white" }}

@@ -1,0 +1,42 @@
+.chat-div {
+  background-color: #3b434f81;
+  max-width: 320px;
+  padding: 16px;
+  color: white;
+  border-radius: 0.5rem;
+}
+
+.name-text,
+.time-text {
+  color: white;
+}
+
+.delivered-text {
+  color: #808080;
+}
+#dropdownDots {
+  list-style: none;
+  text-align: left;
+  padding: 0; /* Remove default padding */
+}
+
+#dropdownDots ul {
+  background-color: #374151;
+  color: white;
+  padding: 0; /* Remove default padding */
+  margin: 0; /* Remove default margin */
+  list-style: none;
+}
+
+#dropdownDots .dropdown-item {
+  text-decoration: none; /* Remove default underline */
+  color: white;
+}
+
+#dropdownDots .dropdown-item:hover {
+  background-color: #374151;
+}
+#dropdownMenuIconButton:hover {
+  background-color: #363b44 !important;
+  color: white;
+}

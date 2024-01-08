@@ -3,6 +3,7 @@ import Register from "./pages/Register";
 import UserLogin from "./pages/UserLogin";
 import Discord from "./pages/Discord";
 import ServerChat from "./pages/ServerChat";
+import JoinServer from "./pages/JoinServer";
 
 function App() {
   return (
@@ -13,6 +14,7 @@ function App() {
           <Route path="/register" element={<Register />} />
           <Route path="/discord" element={<Discord />} />
           <Route path="/server/:id" element={<ServerChat />} />
+          <Route path="/joinserver" element={<JoinServer />} />
         </Routes>
       </BrowserRouter>
     </>

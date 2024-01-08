@@ -22,3 +22,37 @@
 .FriendsDiv {
   overflow-y: scroll;
 }
+.TableALL {
+  overflow-y: scroll;
+  height: 120px;
+}
+
+.custom-table {
+  background-color: #313338;
+}
+.DiscordContainer {
+  width: 100%;
+  height: 100vh;
+}
+.UserChat {
+  overflow-y: scroll;
+}
+.inputForm {
+  position: sticky;
+}
+
+.MainContent {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between; /* To create space between child elements */
+}
+
+.UserChat {
+  flex-grow: 1; /* Allow this div to grow and take available space */
+  overflow-y: auto; /* Enable vertical scrolling if needed */
+}
+
+.inputForm {
+  height: 36px; /* Fixed height for the input form */
+}

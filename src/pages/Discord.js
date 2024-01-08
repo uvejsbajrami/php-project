@@ -37,6 +37,12 @@ import PersonAdd from "@mui/icons-material/PersonAdd";
 import Settings from "@mui/icons-material/Settings";
 import Logout from "@mui/icons-material/Logout";
 import Avatar from "@mui/material/Avatar";
+import SearchFriends from "../components/SearchFriends";
+import List from "@mui/material/List";
+import ListItem from "@mui/material/ListItem";
+import ListItemText from "@mui/material/ListItemText";
+import UserChatDesign from "../components/UserChatDesign";
+import Skeleton from "@mui/material/Skeleton";
 
 //search style
 const Search = styled("div")(({ theme }) => ({
@@ -104,6 +110,12 @@ const style = {
   boxShadow: 24,
   p: 4,
 };
+const style123 = {
+  width: "100%",
+  maxWidth: 360,
+  bgcolor: "#313338",
+  color: "white",
+};
 
 function Discord() {
   const navigate = useNavigate();
@@ -121,15 +133,8 @@ function Discord() {
 
   //followers and followed
   const [userFollower, setUserFollower] = useState([]);
-  // const handleFollowAndUnFollow = (e) => {
-  //   useEffect(() => {
-  //     axios
-  //       .get(
-  //         `http://localhost/php-full-project/php-project/api/api.php?action=add_friends&follower=${user.id}&followed=26`
-  //       )
-  //       .then((response) => console.log(response.data));
-  //   }, []);
-  // };
+
+  const [getUserChat, SetGetUserChat] = useState([]); //marrja e messazheve te userave 1 me 1
 
   useEffect(() => {
     axios
@@ -145,6 +150,10 @@ function Discord() {
       )
       .then((res) => setUserFollower(res.data.followers));
   }, []);
+
+  const [hape, setHape] = React.useState(false);
+  const handlehape = () => setHape(true);
+  const handleHeke = () => setHape(false);
 
   const handleCreateServer = (e) => {
     e.preventDefault();
@@ -243,6 +252,63 @@ function Discord() {
   const handleClosesss = () => {
     setAnchor(null);
   };
+  const [searchValue, setSearchValue] = useState();
+  const [searchFriendsData, setSearchFriendsData] = useState([]);
+
+  const handleSearchFriends = (e) => {
+    e.preventDefault();
+    const elements = e.target.elements;
+    const inputValue = elements["searchFriends"].value;
+    setSearchValue(inputValue);
+
+    if (inputValue !== undefined) {
+      axios
+        .get(
+          `http://localhost/php-full-project/php-project/api/api.php?action=search_follower_users&discordUsername=${inputValue}`
+        )
+        .then((res) => setSearchFriendsData(res?.data?.search_users));
+    }
+  };
+  const [userChatID, setUserChatID] = useState(); // marrja e e id se userit per chat
+
+  const [newMessageTrigger, setNewMessageTrigger] = useState(false);
+  const [message, setMessage] = useState("");
+
+  const handleSendUserMessage = async (e) => {
+    e.preventDefault();
+    const elements = e.target.elements;
+    const newUserMessage = {
+      action: "send_user_message",
+      sender_id: user.id,
+      receiver_id: userChatID,
+      messages: elements["messages"].value,
+    };
+    setMessage("");
+    try {
+      await axios.post(
+        "http://localhost/php-full-project/php-project/api/api.php",
+        newUserMessage
+      );
+      setNewMessageTrigger((prev) => !prev);
+    } catch (error) {
+      console.error("Error creating channel:", error);
+    }
+  };
+
+  const handleGetUserChat = (e, chatUserID) => {
+    e.preventDefault();
+    setUserChatID(chatUserID);
+  };
+  useEffect(() => {
+    if (userChatID !== undefined) {
+      axios
+        .get(
+          `http://localhost/php-full-project/php-project/api/api.php?action=get_user_messages&sender_id=${user.id}&receiver_id=${userChatID}`
+        )
+        .then((res) => SetGetUserChat(res?.data?.user_messages));
+    }
+  }, [userChatID, user.id, newMessageTrigger]);
+
   return (
     <div className="DiscordContainer d-flex ">
       <div className="ServerDiv col-1 d-flex flex-direction-column justify-content-center ">
@@ -511,7 +577,15 @@ function Discord() {
         <div className="firends">
           {userFollower?.length > 0 &&
             userFollower.map((ufollower) => (
-              <FollowerCard ufollower={ufollower} />
+              <List sx={style123} component="nav" aria-label="mailbox folders">
+                <ListItem
+                  button
+                  onClick={(e) => handleGetUserChat(e, ufollower.id)}
+                >
+                  <span className="me-2">{ufollower.id} </span>
+                  <ListItemText primary={ufollower.discordUsername} />
+                </ListItem>
+              </List>
             ))}
         </div>
       </div>
@@ -539,20 +613,67 @@ function Discord() {
                 Online
               </Button>
 
-              <button
-                style={{ height: "30px" }}
-                className="btn btn-sm btn-outline-success mt-3 ms-2"
-              >
-                Add friend
-              </button>
+              <div>
+                <Button onClick={handlehape} className="mt-3">
+                  Add Friend
+                </Button>
+                <Modal
+                  open={hape}
+                  onClose={handleHeke}
+                  aria-labelledby="modal-modal-title"
+                  aria-describedby="modal-modal-description"
+                >
+                  <Box
+                    sx={style}
+                    style={{ backgroundColor: "#313338", color: "white" }}
+                  >
+                    <Typography
+                      id="modal-modal-title"
+                      variant="h6"
+                      component="h2"
+                      className="text-center"
+                    >
+                      Add Friend
+                    </Typography>
+                    <Typography id="modal-modal-description" sx={{ mt: 2 }}>
+                      <div>
+                        <form className="d-flex" onSubmit={handleSearchFriends}>
+                          <input
+                            className="form-control"
+                            type="search"
+                            placeholder="Search Friend"
+                            required
+                            name="searchFriends"
+                          />
+                          <button
+                            className="btn btn-sm btn-outline-primary ms-2"
+                            type="submit"
+                          >
+                            Submit
+                          </button>
+                        </form>
+                      </div>
+                    </Typography>
+                    <Typography>
+                      {searchFriendsData?.length > 0 &&
+                        searchFriendsData.map((searchFriend) => (
+                          <SearchFriends
+                            searchFriendData={searchFriend}
+                            allFriendsData={userFollower}
+                          />
+                        ))}
+                    </Typography>
+                  </Box>
+                </Modal>
+              </div>
             </Box>
           </div>
         </div>
         <hr className="mt-0 mb-0" />
 
-        <div className="friends">
-          <table className="table table-primary FriendsTable ">
-            <thead>
+        <div className="friends TableALL">
+          <table className="table table-dark FriendsTable ">
+            <thead style={{ backgroundColor: "#313338" }}>
               <tr>
                 <th scope="col">Id</th>
                 <th scope="col">Name Surname</th>
@@ -572,6 +693,35 @@ function Discord() {
                 ))}
             </tbody>
           </table>
+        </div>
+
+        <div className="UserChat">
+          {getUserChat?.length > 0 &&
+            getUserChat.map((userChat) => (
+              <UserChatDesign userChatData={userChat} />
+            ))}
+        </div>
+        <div className="mb-2 inputForm" id="inputForm">
+          <form method="POST" onSubmit={handleSendUserMessage}>
+            <div className="input-group">
+              <input
+                type="text"
+                className="form-control"
+                placeholder="Type your message..."
+                style={{ backgroundColor: "#424548", color: "white" }}
+                name="messages"
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+              />
+              <button
+                type="submit"
+                className="btn btn-primary"
+                style={{ backgroundColor: "#7289da", borderColor: "#7289da" }}
+              >
+                Send
+              </button>
+            </div>
+          </form>
         </div>
       </div>
       <div
