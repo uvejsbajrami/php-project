@@ -21,7 +21,6 @@ function UserLogin() {
     }
   };
 
-
   useEffect(() => {
     if (lsuser?.id) navigate("/discord");
   }, []);
@@ -42,7 +41,7 @@ function UserLogin() {
   }, [data]);
 
   return (
-   <div className="loginDiv">
+    <div className="loginDiv">
       <div className="container formContainer">
         <form method="POST" onSubmit={handleLogin}>
           <div className="mb-3">
@@ -73,18 +72,18 @@ function UserLogin() {
               name="password"
             />
           </div>
-  
+
           <button type="submit" className="btn btn-primary">
             Submit
           </button>
-  
+
           <p style={{ paddingBottom: "10px" }} className="mt-2">
             <span style={{ color: "#585c63" }}>Need an account?</span>{" "}
             <Link to={"/register"}>Register</Link>
           </p>
         </form>
       </div>
-   </div>
+    </div>
   );
 }
 

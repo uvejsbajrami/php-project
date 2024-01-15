@@ -727,9 +727,7 @@ function Discord() {
       <div
         style={{ backgroundColor: "#2B2D31", color: "white" }}
         className="rightContent col-2"
-      >
-        123
-      </div>
+      ></div>
     </div>
   );
 }
